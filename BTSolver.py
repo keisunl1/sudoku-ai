@@ -135,23 +135,31 @@ class BTSolver:
                 The bool is true if assignment is consistent, false otherwise.
     """
     def norvigCheck ( self ):
-        assigned_dict = dict()
+        consistent = True
+        assigned_dict = {}
+        
+
         for var in self.network.variables: 
             if var.isAssigned():
                 for neighbor in self.network.getNeighborsOfVariable(var):
                     if var.getAssignment() == neighbor.getAssignment():
-                        return (assigned_dict, False) 
+                        consistent = False
+                        return (assigned_dict, consistent)  
+                    
                     if not neighbor.isAssigned() and (var.getAssignment() in neighbor.getValues()):
                         self.trail.push(neighbor)
                         neighbor.removeValueFromDomain(var.getAssignment())
                         if neighbor.size() == 0:
-                            return (assigned_dict, False)
+                            consistent = False
+                            return (assigned_dict, consistent)
                     
                         for c in self.network.getModifiedConstraints():
                             if not c.isConsistent():
-                                return (assigned_dict, False) 
-                             
+                                consistent = False 
+                                return (assigned_dict, consistent)
+                            
         n = (self.gameboard.p)*(self.gameboard.q)
+        
         for c in self.network.getConstraints():
             counter = [0 for i in range(n)]
             for i in range(n):
@@ -166,8 +174,9 @@ class BTSolver:
 
                             for const in self.network.getModifiedConstraints():
                                 if not const.isConsistent():
-                                    return (assigned_dict,False)
-        return (assigned_dict, True)
+                                    consistent = False
+                                    return (assigned_dict, consistent)
+        return (assigned_dict, consistent)
 
     """
          Optional TODO: Implement your own advanced Constraint Propagation
