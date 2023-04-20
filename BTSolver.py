@@ -149,33 +149,21 @@ class BTSolver:
                     if not neighbor.isAssigned() and (var.getAssignment() in neighbor.getValues()):
                         self.trail.push(neighbor)
                         neighbor.removeValueFromDomain(var.getAssignment())
+
                         if neighbor.size() == 0:
                             consistent = False
                             return (assigned_dict, consistent)
+                        
+                        if neighbor.size() == 1:
+                            # self.trail.push(neighbor) <-- lower trail pushes when ##, backtracks are reaching targeted output for MAD/MRV 
+                            neighbor.assignValue(neighbor.getDomain().values[0])
+                            assigned_dict[neighbor] = neighbor.getAssignment()
                     
                         for c in self.network.getModifiedConstraints():
                             if not c.isConsistent():
                                 consistent = False 
                                 return (assigned_dict, consistent)
-                            
-        n = (self.gameboard.p)*(self.gameboard.q)
-        
-        for c in self.network.getConstraints():
-            counter = [0 for i in range(n)]
-            for i in range(n):
-                for value in c.vars[i].getValues():
-                    counter[value-1] += 1
-            for i in range(n):
-                if counter[i] == 1:
-                    for var in c.vars:
-                        if var.getDomain().contains(i+1):
-                            var.assignValue(i+1)
-                            assigned_dict[var] = var.getAssignment()
-
-                            for const in self.network.getModifiedConstraints():
-                                if not const.isConsistent():
-                                    consistent = False
-                                    return (assigned_dict, consistent)
+                        
         return (assigned_dict, consistent)
 
     """
